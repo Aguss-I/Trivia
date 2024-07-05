@@ -7,8 +7,8 @@ using Postgrest.Models;
 
 public class DatabaseManager : MonoBehaviour
 {
-    string supabaseUrl = "url"; //COMPLETAR
-    string supabaseKey = "key"; //COMPLETAR
+    string supabaseUrl = "https://jenevwbrobsgzfzlehpm.supabase.co"; //COMPLETAR
+    string supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplbmV2d2Jyb2JzZ3pmemxlaHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTk5NTA2MzUsImV4cCI6MjAzNTUyNjYzNX0.1n5hSVIr6kJC6XmiWiTpp4jnrLFeitIsPWeV0sPHC_Y"; //COMPLETAR
 
     Supabase.Client clientSupabase;
 

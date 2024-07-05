@@ -6,23 +6,31 @@ using Postgrest.Models;
 using TMPro;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 public class SupabaseManager : MonoBehaviour
 
 {
-
     [Header("Campos de Interfaz")]
     [SerializeField] TMP_InputField _userIDInput;
     [SerializeField] TMP_InputField _userPassInput;
     [SerializeField] TextMeshProUGUI _stateText;
+    [SerializeField] Button _jugarText;
+     [SerializeField] Button _rankingText;
 
-    string supabaseUrl = "url"; //COMPLETAR
-    string supabaseKey = "key"; //COMPLETAR
+    public static int CurrentUserId { get; private set; }
+    public static string CurrentUsername { get; private set; }
+    string supabaseUrl = "https://jenevwbrobsgzfzlehpm.supabase.co"; //COMPLETAR
+    string supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImplbmV2d2Jyb2JzZ3pmemxlaHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTk5NTA2MzUsImV4cCI6MjAzNTUyNjYzNX0.1n5hSVIr6kJC6XmiWiTpp4jnrLFeitIsPWeV0sPHC_Y"; //COMPLETAR
 
     Supabase.Client clientSupabase;
 
     private usuarios _usuarios = new usuarios();
 
+  public void Start(){
+
+        _jugarText.gameObject.SetActive(false);
+    }
 
     public async void UserLogin()
     {
@@ -36,29 +44,47 @@ public class SupabaseManager : MonoBehaviour
             .Get();
         Debug.Log(test_response.Content);
 
-
-
-        // filtro según datos de login
-        var login_password = await clientSupabase
+     var login_password = await clientSupabase
           .From<usuarios>()
-          .Select("password")
+          .Select("id, password")
           .Where(usuarios => usuarios.username == _userIDInput.text)
           .Get();
 
 
-        if (login_password.Model.password.Equals(_userPassInput.text))
+
+        // filtro segï¿½n datos de login
+       if (login_password.Models.Count > 0)
         {
-            print("LOGIN SUCCESSFUL");
-            _stateText.text = "LOGIN SUCCESSFUL";
-            _stateText.color = Color.green;
+            var usuario = login_password.Models[0];
+            if (usuario.password.Equals(_userPassInput.text))
+            {
+                print("LOGIN SUCCESSFUL");
+                _stateText.text = "LOGIN SUCCESSFUL";
+                _stateText.color = Color.green;
+                SupabaseManager.CurrentUsername = _userIDInput.text; // Guardar el nombre de usuario actual
+
+                SupabaseManager.CurrentUserId = usuario.id;  // Guardar el id del usuario actual
+
+                _jugarText.gameObject.SetActive(true);
+            }
+            else
+            {
+                print("WRONG PASSWORD");
+                _stateText.text = "WRONG PASSWORD";
+                _stateText.color = Color.red;
+            }
         }
         else
         {
-            print("WRONG PASSWORD");
-            _stateText.text = "WRONG PASSWORD";
+            print("USER NOT FOUND");
+            _stateText.text = "USER NOT FOUND";
             _stateText.color = Color.red;
         }
     }
+    
+  
+    
+
 
     public async void InsertarNuevoUsuario()
     {
@@ -66,18 +92,18 @@ public class SupabaseManager : MonoBehaviour
         // Initialize the Supabase client
         clientSupabase = new Supabase.Client(supabaseUrl, supabaseKey);
 
-        // Consultar el último id utilizado (ID = index)
+        // Consultar el ï¿½ltimo id utilizado (ID = index)
         var ultimoId = await clientSupabase
             .From<usuarios>()
             .Select("id")
-            .Order(usuarios => usuarios.id, Postgrest.Constants.Ordering.Descending) // Ordenar en orden descendente para obtener el último id
+            .Order(usuarios => usuarios.id, Postgrest.Constants.Ordering.Descending) // Ordenar en orden descendente para obtener el ï¿½ltimo id
             .Get();
 
-        int nuevoId = 1; // Valor predeterminado si la tabla está vacía
+        int nuevoId = 1; // Valor predeterminado si la tabla estï¿½ vacï¿½a
 
         if (ultimoId != null)
         {
-            nuevoId = ultimoId.Model.id + 1; // Incrementar el último id
+            nuevoId = ultimoId.Model.id + 1; // Incrementar el ï¿½ltimo id
         }
 
         // Crear el nuevo usuario con el nuevo id
@@ -97,7 +123,7 @@ public class SupabaseManager : MonoBehaviour
             .Insert(new[] { nuevoUsuario });
 
 
-        //verifico el estado de la inserción 
+        //verifico el estado de la inserciï¿½n 
         if (resultado.ResponseMessage.IsSuccessStatusCode)
         {
             _stateText.text = "Usuario Correctamente Ingresado";
@@ -109,7 +135,18 @@ public class SupabaseManager : MonoBehaviour
             _stateText.text = resultado.ResponseMessage.ToString();
             _stateText.color = Color.green;
         }
+    
+   
 
     }
-}
 
+     public void Jugar(){
+
+     SceneManager.LoadScene("TriviaSelectScene");
+     }
+
+     public void Ranking(){
+        SceneManager.LoadScene("RankingScene");
+     }
+     
+}
